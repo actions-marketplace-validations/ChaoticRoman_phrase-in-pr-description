@@ -1,0 +1,19 @@
+name: Negative Gate (Reusable Workflow)
+
+on:
+  pull_request:
+    types: [opened, synchronize, edited]
+
+jobs:
+  check-skip:
+    uses: ./.github/workflows/detect.yml
+    with:
+      phrase: 'Skip hello'  # detects also "skip-hello, "SKIP HELLO", etc.
+
+  echo-hello:
+    needs: check-skip
+    if: "!needs.check-skip.outputs.detected"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Say hello
+        run: echo "Hello!"
