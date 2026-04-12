@@ -1,0 +1,21 @@
+name: Negative Gate
+
+on:
+  pull_request:
+    types: [opened, synchronize, edited]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for skip phrase
+        id: skip
+        uses: ./
+        with:
+          phrase: 'skip[ -_]hello'
+
+      - name: Say hello
+        if: "!steps.skip.outputs.detected"
+        run: echo "Hello!"

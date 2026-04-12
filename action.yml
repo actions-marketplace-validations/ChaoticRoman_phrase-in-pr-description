@@ -1,0 +1,36 @@
+name: Phrase in PR Description
+description: Detects whether a given phrase (regex) appears in a pull request description and outputs a skip flag.
+
+inputs:
+  phrase:
+    description: Extended-regex pattern to search for in the PR description.
+    required: false
+
+outputs:
+  detected:
+    description: "'true' if the phrase was found, '' otherwise."
+    value: ${{ steps.check.outputs.detected }}
+
+runs:
+  using: composite
+  steps:
+    - name: Check phrase in PR description
+      id: check
+      shell: bash
+      # Pass inputs through env vars rather than interpolating ${{ }} directly
+      # into the script: the Actions runner substitutes expressions before the
+      # shell parses the script, so a pattern containing shell metacharacters
+      # would be executed as code. Env vars are never interpreted by the shell.
+      env:
+        PR_BODY: ${{ github.event.pull_request.body }}
+        PHRASE: ${{ inputs.phrase }}
+      run: |
+        if [[ -z "$PHRASE" ]]; then
+          echo "Error: 'phrase' input is required." >&2
+          exit 1
+        fi
+        if echo "$PR_BODY" | grep -iqE "$PHRASE"; then
+          echo "detected=true" >> $GITHUB_OUTPUT
+        else
+          echo "detected=" >> $GITHUB_OUTPUT
+        fi

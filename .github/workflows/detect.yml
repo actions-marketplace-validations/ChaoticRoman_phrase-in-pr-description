@@ -1,0 +1,36 @@
+name: Detect
+
+on:
+  workflow_call:
+    inputs:
+      phrase:
+        description: Extended-regex pattern to search for in the PR description. Case-insensitive.
+        required: true
+        type: string
+    outputs:
+      detected:
+        description: "'true' if the phrase was found, '' otherwise."
+        value: ${{ jobs.detect.outputs.detected }}
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      detected: ${{ steps.check.outputs.detected }}
+    steps:
+      - name: Check phrase in PR description
+        id: check
+        shell: bash
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PHRASE: ${{ inputs.phrase }}
+        run: |
+          if [[ -z "$PHRASE" ]]; then
+            echo "Error: 'phrase' input is required." >&2
+            exit 1
+          fi
+          if echo "$PR_BODY" | grep -iqE "$PHRASE"; then
+            echo "detected=true" >> $GITHUB_OUTPUT
+          else
+            echo "detected=" >> $GITHUB_OUTPUT
+          fi

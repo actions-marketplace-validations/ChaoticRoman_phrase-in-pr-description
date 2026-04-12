@@ -1,0 +1,27 @@
+name: Negative Gate (Two Jobs)
+
+on:
+  pull_request:
+    types: [opened, synchronize, edited]
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      detected: ${{ steps.check.outputs.detected }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for skip phrase
+        id: check
+        uses: ./
+        with:
+          phrase: 'skip[ -_]hello'
+
+  echo-hello:
+    needs: gate
+    if: "!needs.gate.outputs.detected"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Say hello
+        run: echo "Hello!"

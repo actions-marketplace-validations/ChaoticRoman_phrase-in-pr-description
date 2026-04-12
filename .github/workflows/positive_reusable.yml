@@ -1,0 +1,19 @@
+name: Positive Gate (Reusable Workflow)
+
+on:
+  pull_request:
+    types: [opened, synchronize, edited]
+
+jobs:
+  check:
+    uses: ./.github/workflows/detect.yml
+    with:
+      phrase: 'run'
+
+  echo-hello:
+    needs: check
+    if: needs.check.outputs.detected
+    runs-on: ubuntu-latest
+    steps:
+      - name: Say hello
+        run: echo "Hello!"
