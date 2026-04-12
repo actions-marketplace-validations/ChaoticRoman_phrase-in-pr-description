@@ -5,6 +5,14 @@ inputs:
   phrase:
     description: Extended-regex pattern to search for in the PR description.
     required: false
+  true_value:
+    description: Value to output when the phrase is detected.
+    required: false
+    default: 'true'
+  false_value:
+    description: Value to output when the phrase is not detected.
+    required: false
+    default: ''
 
 outputs:
   detected:
@@ -24,13 +32,15 @@ runs:
       env:
         PR_BODY: ${{ github.event.pull_request.body }}
         PHRASE: ${{ inputs.phrase }}
+        TRUE_VALUE: ${{ inputs.true_value }}
+        FALSE_VALUE: ${{ inputs.false_value }}
       run: |
         if [[ -z "$PHRASE" ]]; then
           echo "Error: 'phrase' input is required." >&2
           exit 1
         fi
         if echo "$PR_BODY" | grep -iqE "$PHRASE"; then
-          echo "detected=true" >> $GITHUB_OUTPUT
+          echo "detected=$TRUE_VALUE" >> $GITHUB_OUTPUT
         else
-          echo "detected=" >> $GITHUB_OUTPUT
+          echo "detected=$FALSE_VALUE" >> $GITHUB_OUTPUT
         fi
