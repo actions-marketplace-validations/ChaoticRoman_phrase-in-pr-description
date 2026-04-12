@@ -14,17 +14,19 @@ A GitHub Action that detects whether a given phrase (extended regex) appears in 
 
 ### Inputs
 
-| Name     | Required | Description                                              |
-|----------|----------|----------------------------------------------------------|
-| `phrase` | yes      | Extended-regex pattern to search for in the PR description. Case-insensitive. |
+| Name          | Required | Default  | Description                                              |
+|---------------|----------|----------|----------------------------------------------------------|
+| `phrase`      | yes      |          | Extended-regex pattern to search for in the PR description. Case-insensitive. |
+| `true_value`  | no       | `'true'` | Value of `detected` when the phrase is found.            |
+| `false_value` | no       | `''`     | Value of `detected` when the phrase is not found.        |
 
 ### Outputs
 
-| Name       | Value                                          |
-|------------|------------------------------------------------|
-| `detected` | `'true'` if the phrase was found, `''` otherwise. |
+| Name       | Default value                                  | Configurable via        |
+|------------|------------------------------------------------|-------------------------|
+| `detected` | `'true'` if the phrase was found, `''` otherwise. | `true_value`, `false_value` |
 
-The output is `'true'` or empty string, so it can be used directly as a boolean in `if:` conditions:
+By default the output is `'true'` or empty string, so it can be used directly as a boolean in `if:` conditions:
 
 **Run a step only when the phrase is detected:**
 
@@ -39,6 +41,8 @@ if: "!steps.skip.outputs.detected"
 ```
 
 > **Note:** The quotes are required when using `!` for negation — without them, YAML interprets `!` as a tag indicator and the workflow will fail to parse.
+
+> **Warning:** GitHub Actions evaluates truthiness based on whether a string is empty or not — `'false'` is a non-empty string and therefore **truthy**. If you use `detected` in an `if:` condition, `false_value` must remain the default empty string `''`. Setting it to any non-empty value (including `'false'`) will silently break negation conditions.
 
 ## Examples
 
@@ -91,8 +95,6 @@ jobs:
     outputs:
       detected: ${{ steps.check.outputs.detected }}
     steps:
-      - uses: actions/checkout@v4
-
       - name: Check for run phrase
         id: check
         uses: ChaoticRoman/phrase-in-pr-description@v1
@@ -117,8 +119,6 @@ jobs:
     outputs:
       detected: ${{ steps.check.outputs.detected }}
     steps:
-      - uses: actions/checkout@v4
-
       - name: Check for skip phrase
         id: check
         uses: ChaoticRoman/phrase-in-pr-description@v1
@@ -141,13 +141,13 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-
       - name: Check for skip phrase
         id: skip
         uses: ChaoticRoman/phrase-in-pr-description@v1
         with:
           phrase: 'skip[ -_]tests'
+
+      - uses: actions/checkout@v6
 
       - name: Run tests
         if: "!steps.skip.outputs.detected"
