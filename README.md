@@ -7,7 +7,7 @@ A GitHub Action that detects whether a given phrase (extended regex) appears in 
 ```yaml
 - name: Check for skip phrase
   id: skip
-  uses: ChaoticRoman/phrase-in-pr-description@v1
+  uses: ChaoticRoman/phrase-in-pr-description@v2
   with:
     phrase: 'skip[ -_]hello'
 ```
@@ -26,7 +26,7 @@ A GitHub Action that detects whether a given phrase (extended regex) appears in 
 |------------|------------------------------------------------|-------------------------|
 | `detected` | `'true'` if the phrase was found, `''` otherwise. | `true_value`, `false_value` |
 
-By default the output is `'true'` or empty string, so it can be used directly as a boolean in `if:` conditions:
+By default the output is `'true'` or **empty string**, so it can be used directly as a boolean in `if:` conditions:
 
 **Run a step only when the phrase is detected:**
 
@@ -42,7 +42,12 @@ if: "!steps.skip.outputs.detected"
 
 > **Note:** The quotes are required when using `!` for negation — without them, YAML interprets `!` as a tag indicator and the workflow will fail to parse.
 
-> **Warning:** GitHub Actions evaluates truthiness based on whether a string is empty or not — `'false'` is a non-empty string and therefore **truthy**. If you use `detected` in an `if:` condition, `false_value` must remain the default empty string `''`. Setting it to any non-empty value (including `'false'`) will silently break negation conditions.
+> **Warning:** GitHub Actions evaluates truthiness based on whether a string is empty or not — `'false'` is a non-empty string and therefore **truthy**. If you use `detected` in an `if:` condition, `false_value` must remain the default empty string `''`. Setting it to any non-empty value (including `'false'`) will silently break negation conditions. Of course you can switch to command below as well:
+```yaml
+if: steps.skip.outputs.detected != "true"
+# or
+if: steps.skip.outputs.detected == "false"
+```
 
 ## Examples
 
@@ -60,7 +65,7 @@ on:
 
 jobs:
   check-skip:
-    uses: ChaoticRoman/phrase-in-pr-description/.github/workflows/detect.yml@v1
+    uses: ChaoticRoman/phrase-in-pr-description/.github/workflows/detect.yml@v2
     with:
       phrase: 'Skip hello'  # detects also "skip-hello, "SKIP HELLO", etc.
 
@@ -97,7 +102,7 @@ jobs:
     steps:
       - name: Check for run phrase
         id: check
-        uses: ChaoticRoman/phrase-in-pr-description@v1
+        uses: ChaoticRoman/phrase-in-pr-description@v2
         with:
           phrase: 'run'
 
@@ -121,7 +126,7 @@ jobs:
     steps:
       - name: Check for skip phrase
         id: check
-        uses: ChaoticRoman/phrase-in-pr-description@v1
+        uses: ChaoticRoman/phrase-in-pr-description@v2
         with:
           phrase: 'skip[ -_]hello'
 
@@ -143,7 +148,7 @@ jobs:
     steps:
       - name: Check for skip phrase
         id: skip
-        uses: ChaoticRoman/phrase-in-pr-description@v1
+        uses: ChaoticRoman/phrase-in-pr-description@v2
         with:
           phrase: 'skip[ -_]tests'
 
